@@ -8,7 +8,7 @@ import java.util.List;
 @RestController
 public class controllerWatchlist {
 
-    @GetMapping("/")
+    @GetMapping("/Watchlist")
     public List<Watchlist> testRoute() {
         return List.of(
                 new Watchlist(001, "This is a test Watchlist item 1.", "Movie", "test1", false, 3),
