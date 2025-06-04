@@ -1,16 +1,24 @@
 package de.htwberlin.webtech.webtech;
 
+import jakarta.persistence.*;
+
+@Entity
 public class Watchlist {
 
-    private long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String title;
     private String type;
     private String genre;
     private boolean watched;
     private int rating;
 
-    public Watchlist(long id, String title, String type, String genre, boolean watched, int rating) {
-        this.id = id;
+    // Leerer Konstruktor für Hibernate
+    public Watchlist() {}
+
+    public Watchlist(String title, String type, String genre, boolean watched, int rating) {
         this.title = title;
         this.type = type;
         this.genre = genre;
@@ -18,11 +26,12 @@ public class Watchlist {
         this.rating = rating;
     }
 
-    public long getId() {
+    // Getter und Setter
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
