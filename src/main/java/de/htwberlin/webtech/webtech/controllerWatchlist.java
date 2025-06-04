@@ -1,5 +1,6 @@
-package de.htwberlin.webtech.webtech.web;
+package de.htwberlin.webtech.webtech;
 
+import de.htwberlin.webtech.webtech.Watchlist;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -11,24 +12,24 @@ import java.util.concurrent.atomic.AtomicLong;
 public class controllerWatchlist {
 
     // Temporärer In-Memory-Speicher (sollte später durch eine Datenbank ersetzt werden)
-    private final List<Watchlist> watchlistItems = new ArrayList<>();
+    private final List<de.htwberlin.webtech.webtech.Watchlist> watchlistItems = new ArrayList<>();
     private final AtomicLong idCounter = new AtomicLong(1);
 
     // Initialisiere mit Test-Daten
     public controllerWatchlist() {
-        watchlistItems.add(new Watchlist(idCounter.getAndIncrement(), "This is a test Watchlist item 1.", "Movie", "test1", false, 3));
-        watchlistItems.add(new Watchlist(idCounter.getAndIncrement(), "This is a test Watchlist item 2.", "Show", "test2", true, 4));
-        watchlistItems.add(new Watchlist(idCounter.getAndIncrement(), "This is a test Watchlist item 3.", "Movie", "test3", false, 2));
+        watchlistItems.add(new de.htwberlin.webtech.webtech.Watchlist(idCounter.getAndIncrement(), "This is a test Watchlist item 1.", "Movie", "test1", false, 3));
+        watchlistItems.add(new de.htwberlin.webtech.webtech.Watchlist(idCounter.getAndIncrement(), "This is a test Watchlist item 2.", "Show", "test2", true, 4));
+        watchlistItems.add(new de.htwberlin.webtech.webtech.Watchlist(idCounter.getAndIncrement(), "This is a test Watchlist item 3.", "Movie", "test3", false, 2));
     }
 
     @GetMapping("/Watchlist")
-    public List<Watchlist> getAllWatchlistItems() {
+    public List<de.htwberlin.webtech.webtech.Watchlist> getAllWatchlistItems() {
         return new ArrayList<>(watchlistItems);
     }
 
     @PostMapping("/Watchlist")
-    public Watchlist addWatchlistItem(@RequestBody WatchlistRequest request) {
-        Watchlist newItem = new Watchlist(
+    public de.htwberlin.webtech.webtech.Watchlist addWatchlistItem(@RequestBody WatchlistRequest request) {
+        de.htwberlin.webtech.webtech.Watchlist newItem = new de.htwberlin.webtech.webtech.Watchlist(
                 idCounter.getAndIncrement(),
                 request.getTitle(),
                 request.getType(),
@@ -46,11 +47,11 @@ public class controllerWatchlist {
     }
 
     @PutMapping("/Watchlist/{id}")
-    public Watchlist updateWatchlistItem(@PathVariable long id, @RequestBody WatchlistRequest request) {
+    public de.htwberlin.webtech.webtech.Watchlist updateWatchlistItem(@PathVariable long id, @RequestBody WatchlistRequest request) {
         for (int i = 0; i < watchlistItems.size(); i++) {
-            Watchlist item = watchlistItems.get(i);
+            de.htwberlin.webtech.webtech.Watchlist item = watchlistItems.get(i);
             if (item.getId() == id) {
-                Watchlist updatedItem = new Watchlist(
+                de.htwberlin.webtech.webtech.Watchlist updatedItem = new Watchlist(
                         id,
                         request.getTitle(),
                         request.getType(),
