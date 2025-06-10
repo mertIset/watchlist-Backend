@@ -15,8 +15,14 @@ public class WatchlistController {
     private UserService userService;
 
     @GetMapping("/Watchlist")
-    public List<Watchlist> getAllWatchlistItems(@RequestParam Long userId) {
-        return watchlistService.getAllWatchlistItemsByUser(userId);
+    public List<Watchlist> getAllWatchlistItems(@RequestParam(required = false) Long userId) {
+        if (userId != null) {
+            // Spezifischer User - wie bisher
+            return watchlistService.getAllWatchlistItemsByUser(userId);
+        } else {
+            // Alle User - neue Funktionalität
+            return watchlistService.getAllWatchlistItems();
+        }
     }
 
     @PostMapping("/Watchlist")
