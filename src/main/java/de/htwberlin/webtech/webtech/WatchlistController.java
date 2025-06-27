@@ -17,10 +17,8 @@ public class WatchlistController {
     @GetMapping("/Watchlist")
     public List<Watchlist> getAllWatchlistItems(@RequestParam(required = false) Long userId) {
         if (userId != null) {
-            // Spezifischer User - wie bisher
             return watchlistService.getAllWatchlistItemsByUser(userId);
         } else {
-            // Alle User - neue Funktionalität
             return watchlistService.getAllWatchlistItems();
         }
     }
@@ -36,6 +34,7 @@ public class WatchlistController {
                 request.getGenre(),
                 request.isWatched(),
                 request.getRating(),
+                request.getPosterUrl(), // Kann null sein - wird automatisch gesucht
                 user
         );
         return watchlistService.saveWatchlistItem(newItem);
@@ -57,6 +56,7 @@ public class WatchlistController {
                 request.getGenre(),
                 request.isWatched(),
                 request.getRating(),
+                request.getPosterUrl(),
                 user
         );
         return watchlistService.updateWatchlistItem(id, updatedItem, request.getUserId());
@@ -68,13 +68,35 @@ public class WatchlistController {
                 .orElseThrow(() -> new RuntimeException("Watchlist item with id " + id + " not found"));
     }
 
-    // Request DTO für POST/PUT Requests
+    /**
+     * Endpunkt zum manuellen Aktualisieren des Covers eines Eintrags
+     */
+    @PostMapping("/Watchlist/{id}/refresh-poster")
+    public Watchlist refreshPoster(@PathVariable Long id, @RequestParam Long userId) {
+        return watchlistService.refreshPoster(id, userId);
+    }
+
+    /**
+     * Endpunkt zum Batch-Update aller fehlenden Cover für einen User
+     */
+    @PostMapping("/Watchlist/refresh-all-posters")
+    public String refreshAllPosters(@RequestParam Long userId) {
+        try {
+            watchlistService.refreshAllMissingPosters(userId);
+            return "Cover-Update für alle Einträge gestartet!";
+        } catch (Exception e) {
+            return "Fehler beim Aktualisieren der Cover: " + e.getMessage();
+        }
+    }
+
+    // Erweiterte Request DTO für POST/PUT Requests
     public static class WatchlistRequest {
         private String title;
         private String type;
         private String genre;
         private boolean watched;
         private int rating;
+        private String posterUrl; // Neu: Optional für manuell gesetzte Cover
         private Long userId;
 
         // Getters und Setters
@@ -92,6 +114,9 @@ public class WatchlistController {
 
         public int getRating() { return rating; }
         public void setRating(int rating) { this.rating = rating; }
+
+        public String getPosterUrl() { return posterUrl; }
+        public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
 
         public Long getUserId() { return userId; }
         public void setUserId(Long userId) { this.userId = userId; }
