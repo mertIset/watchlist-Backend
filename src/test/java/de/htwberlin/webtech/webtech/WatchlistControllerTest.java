@@ -3,6 +3,7 @@ package de.htwberlin.webtech.webtech;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,15 +15,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(WatchlistController.class)
 @ActiveProfiles("test")
-class WatchlistControllerTest {
+@Tag(TestConstants.TestCategories.CONTROLLER_TEST)
+class WatchlistControllerTest extends BaseTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,20 +45,22 @@ class WatchlistControllerTest {
 
     @BeforeEach
     void setUp() {
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setUsername("testuser");
-        testUser.setEmail("test@example.com");
+        testUser = TestDataBuilder.aUser()
+                .withId(1L)
+                .withUsername("testuser")
+                .withEmail("test@example.com")
+                .build();
 
-        testWatchlist = new Watchlist();
-        testWatchlist.setId(1L);
-        testWatchlist.setTitle("Test Movie");
-        testWatchlist.setType("Film");
-        testWatchlist.setGenre("Action");
-        testWatchlist.setWatched(false);
-        testWatchlist.setRating(0);
-        testWatchlist.setPosterUrl("https://example.com/poster.jpg");
-        testWatchlist.setUser(testUser);
+        testWatchlist = TestDataBuilder.aWatchlistItem()
+                .withId(1L)
+                .withTitle("Test Movie")
+                .withType("Film")
+                .withGenre("Action")
+                .withWatched(false)
+                .withRating(0)
+                .withPosterUrl("https://example.com/poster.jpg")
+                .withUser(testUser)
+                .build();
     }
 
     @Test
@@ -95,13 +101,14 @@ class WatchlistControllerTest {
         when(userService.findById(1L)).thenReturn(Optional.of(testUser));
         when(watchlistService.saveWatchlistItem(any(Watchlist.class))).thenReturn(testWatchlist);
 
-        WatchlistController.WatchlistRequest request = new WatchlistController.WatchlistRequest();
-        request.setTitle("New Movie");
-        request.setType("Film");
-        request.setGenre("Drama");
-        request.setWatched(true);
-        request.setRating(8);
-        request.setUserId(1L);
+        WatchlistController.WatchlistRequest request = TestDataBuilder.aWatchlistRequest()
+                .withTitle("New Movie")
+                .withType("Film")
+                .withGenre("Drama")
+                .withWatched(true)
+                .withRating(8)
+                .withUserId(1L)
+                .build();
 
         // When & Then
         mockMvc.perform(post("/Watchlist")
@@ -117,13 +124,14 @@ class WatchlistControllerTest {
         // Given
         when(userService.findById(999L)).thenReturn(Optional.empty());
 
-        WatchlistController.WatchlistRequest request = new WatchlistController.WatchlistRequest();
-        request.setTitle("New Movie");
-        request.setType("Film");
-        request.setGenre("Drama");
-        request.setWatched(true);
-        request.setRating(8);
-        request.setUserId(999L);
+        WatchlistController.WatchlistRequest request = TestDataBuilder.aWatchlistRequest()
+                .withTitle("New Movie")
+                .withType("Film")
+                .withGenre("Drama")
+                .withWatched(true)
+                .withRating(8)
+                .withUserId(999L)
+                .build();
 
         // When & Then
         mockMvc.perform(post("/Watchlist")
@@ -163,20 +171,21 @@ class WatchlistControllerTest {
         when(watchlistService.updateWatchlistItem(anyLong(), any(Watchlist.class), anyLong()))
                 .thenReturn(testWatchlist);
 
-        WatchlistController.WatchlistRequest request = new WatchlistController.WatchlistRequest();
-        request.setTitle("Updated Movie");
-        request.setType("Serie");
-        request.setGenre("Drama");
-        request.setWatched(true);
-        request.setRating(9);
-        request.setUserId(1L);
+        WatchlistController.WatchlistRequest request = TestDataBuilder.aWatchlistRequest()
+                .withTitle("Updated Movie")
+                .withType("Serie")
+                .withGenre("Drama")
+                .withWatched(true)
+                .withRating(9)
+                .withUserId(1L)
+                .build();
 
         // When & Then
         mockMvc.perform(put("/Watchlist/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Test Movie"));
+                .andExpected(jsonPath("$.title").value("Test Movie"));
     }
 
     @Test
@@ -184,13 +193,14 @@ class WatchlistControllerTest {
         // Given
         when(userService.findById(999L)).thenReturn(Optional.empty());
 
-        WatchlistController.WatchlistRequest request = new WatchlistController.WatchlistRequest();
-        request.setTitle("Updated Movie");
-        request.setType("Serie");
-        request.setGenre("Drama");
-        request.setWatched(true);
-        request.setRating(9);
-        request.setUserId(999L);
+        WatchlistController.WatchlistRequest request = TestDataBuilder.aWatchlistRequest()
+                .withTitle("Updated Movie")
+                .withType("Serie")
+                .withGenre("Drama")
+                .withWatched(true)
+                .withRating(9)
+                .withUserId(999L)
+                .build();
 
         // When & Then
         mockMvc.perform(put("/Watchlist/1")
@@ -227,10 +237,11 @@ class WatchlistControllerTest {
     @Test
     void testRefreshPoster_Success() throws Exception {
         // Given
-        Watchlist updatedWatchlist = new Watchlist();
-        updatedWatchlist.setId(1L);
-        updatedWatchlist.setTitle("Test Movie");
-        updatedWatchlist.setPosterUrl("https://new-poster.com/image.jpg");
+        Watchlist updatedWatchlist = TestDataBuilder.aWatchlistItem()
+                .withId(1L)
+                .withTitle("Test Movie")
+                .withPosterUrl("https://new-poster.com/image.jpg")
+                .build();
 
         when(watchlistService.refreshPoster(1L, 1L)).thenReturn(updatedWatchlist);
 
@@ -256,11 +267,8 @@ class WatchlistControllerTest {
     @Test
     void testRefreshAllPosters_Exception() throws Exception {
         // Given
-        when(watchlistService.refreshAllMissingPosters(1L))
-                .thenThrow(new RuntimeException("Database error"));
-
-        // Leider kann Mockito void Methoden nicht einfach mocken für Exceptions
-        // Dieser Test zeigt das Prinzip, funktioniert aber möglicherweise nicht direkt
+        doThrow(new RuntimeException("Database error"))
+                .when(watchlistService).refreshAllMissingPosters(1L);
 
         // When & Then
         mockMvc.perform(post("/Watchlist/refresh-all-posters")
@@ -289,7 +297,7 @@ class WatchlistControllerTest {
     void testCORSHeaders() throws Exception {
         // Test, dass CORS-Header korrekt gesetzt werden
         mockMvc.perform(options("/Watchlist")
-                        .header("Origin", "http://localhost:5173")
+                        .header("Origin", TestConstants.Http.CORS_ORIGIN_LOCALHOST)
                         .header("Access-Control-Request-Method", "GET"))
                 .andExpect(status().isOk())
                 .andExpect(header().exists("Access-Control-Allow-Origin"));
@@ -305,7 +313,7 @@ class WatchlistControllerTest {
         mockMvc.perform(get("/Watchlist")
                         .param("userId", "1"))
                 .andExpect(status().isOk())
-                .andExpected(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
     }
 
